@@ -13,7 +13,9 @@ class Website:
         self.pay_tag = pay_tag
         self.desc_tag = desc_tag
 
-indeed = Website('Indeed', 'test.com', 'jobsearch-RightPane css-1wwhdud eu4oa1w0', 'embedded')
+# def indeed():
+#     indeed = Website('Indeed', 'test.com', 'jobsearch-RightPane css-1wwhdud eu4oa1w0', 'embedded')
+#     return indeed
 
 def gradcracker():
     """Return an instance of the website class for Gradcracker"""
