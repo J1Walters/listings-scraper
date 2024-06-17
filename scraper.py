@@ -7,7 +7,12 @@ class Scraper:
 
     def scrape_gradcracker(self):
         """Scrape from Gradcracker"""
-        print('foo')
+        try:
+            r = requests.get(self.website.url)
+        except Exception:
+            print('An Error Occurred')
+            return None
+        return BeautifulSoup(r.text, 'html.parser')
 
     def scrape_indeed(self):
         """Scrape from Indeed"""
@@ -15,8 +20,8 @@ class Scraper:
 
     def scrape(self):
         if self.website.name == 'Gradcracker':
-            self.scrape_gradcracker()
+            return self.scrape_gradcracker()
         elif self.website.name == 'Indeed':
-            self.scrape_indeed()
+            return self.scrape_indeed()
         else:
             pass
