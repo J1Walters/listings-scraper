@@ -28,6 +28,3 @@ def gradcracker():
                    desc_tag = 'aria-labelledby="description"'
     )
     return site
-
-def foo():
-    pass
