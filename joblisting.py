@@ -16,3 +16,6 @@ class JobListing:
         print(f'Location: {self.location}')
         print(f'Pay: {self.pay}')
         print(f'Description: {self.description}')
+
+    def dump_to_db():
+        pass
