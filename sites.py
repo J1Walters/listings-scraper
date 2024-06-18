@@ -21,12 +21,12 @@ def gradcracker():
     """Return an instance of the website class for Gradcracker"""
     site = Website(name = 'Gradcracker',
                    url = 'https://www.gradcracker.com/search/computing-technology/jobs',
-                   listing_class = 'tw-p-4 result-item',
+                   listing_class = None,
                    listing_format = 'new-page',
                    company_tag = None,
-                   title_tag = 'tw-text-xl tw-font-semibold tw-text-employer-500 tw-text-balance',
-                   location_tag = 'tw-pb-1 tw-font-semibold tw-text-employer-500',
-                   pay_tag = 'tw-pb-1 tw-font-semibold tw-text-employer-500',
-                   desc_tag = 'aria-labelledby="description"'
+                   title_tag = 'h1',
+                   location_tag = 'Location',
+                   pay_tag = 'Salary',
+                   desc_tag = 'body-content'
     )
     return site
