@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.options import Options
 
 CHROMEDRIVER_PATH = './chromedriver/chromedriver.exe'
 options = Options()
-options.add_argument('--headless')
+# options.add_argument('--headless')
 
 def load_selenium_driver():
     """Load and return the Selenium driver"""
