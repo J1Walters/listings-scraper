@@ -1,8 +1,10 @@
 import time
 import re
+import sqlite3
 from bs4 import BeautifulSoup
 from joblisting import JobListing
 from selenium_config import load_selenium_driver
+from sqlite_config import DATABASE_PATH
 
 class Scraper:
     # Get Selenium driver
@@ -39,12 +41,12 @@ class Scraper:
         """Find the link to the next page in the given soup"""
         try:
             next_page = soup.find('a', rel='next').attrs.get('href')
-        except:
+        except Exception:
             return None
         
         return next_page
 
-    def __scrape_gradcracker(self, url):
+    def __scrape_gradcracker(self, url, db_con):
         """Scrape from Gradcracker"""
         # Get list of all links on page
         try:
@@ -81,6 +83,8 @@ class Scraper:
             
             # Make instance of JobListing class and dump info to database
             job = JobListing(self.website.name, company, jobtitle, location, pay, desc)
+            job.dump_to_db(db_con)
+
             # # DEBUG
             # print(company, jobtitle, location, pay)
             # print(desc)
@@ -91,18 +95,25 @@ class Scraper:
         if next_page is not None:
             next_url = 'https://www.gradcracker.com' + next_page
             print('Moving to next page...')
-            self.__scrape_gradcracker(next_url)
+            self.__scrape_gradcracker(next_url, db_con)
 
     def __scrape_indeed(self):
         """Scrape from Indeed"""
         print('bar')
 
     def scrape(self):
+        print(f'Scraping from {self.website.name}...')
+
+        # Open database connection
+        con = sqlite3.connect(DATABASE_PATH)
+
+        # Run scraping function for corresponding website
         if self.website.name == 'Gradcracker':
-            print('Scraping Gradcracker...')
-            self.__scrape_gradcracker(self.website.url)
-            print('Finished!')
+            self.__scrape_gradcracker(self.website.url, con)
         elif self.website.name == 'Indeed':
             return self.__scrape_indeed()
-        else:
-            pass
+
+        # Close database connection
+        con.close()
+
+        print('Finished!')
