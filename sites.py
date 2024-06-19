@@ -23,7 +23,7 @@ def gradcracker():
                    url = 'https://www.gradcracker.com/search/computing-technology/jobs',
                    listing_class = None,
                    listing_format = 'new-page',
-                   company_tag = None,
+                   company_tag = 'ga_employerName',
                    title_tag = 'h1',
                    location_tag = 'Location',
                    pay_tag = 'Salary',
