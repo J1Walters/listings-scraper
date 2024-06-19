@@ -1,0 +1,1 @@
+DATABASE_PATH = 'C:/University/6G7V0007_MSC_Project/Project/Data/joblistings.db'
