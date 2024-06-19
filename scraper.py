@@ -1,6 +1,7 @@
 import time
 import re
 from bs4 import BeautifulSoup
+from joblisting import JobListing
 from selenium_config import load_selenium_driver
 
 class Scraper:
@@ -10,8 +11,8 @@ class Scraper:
     def __init__(self, website):
         self.website = website
 
-    def __get_html(self, url):
-        """Get the HTML from the given URL"""
+    def __get_soup(self, url):
+        """Get the BeautifulSoup HTML from the given URL"""
         try:
             # Make connection to site and wait for loading
             Scraper.driver.get(url)
@@ -20,54 +21,77 @@ class Scraper:
             print(e)
             return None
 
-        return Scraper.driver.page_source
+        return BeautifulSoup(Scraper.driver.page_source, 'html.parser')
 
-    def get_links(self):
-        """Get a list of all the links from the websites URL"""
-        try:
-            # Get HTML
-            html = self.__get_html(self.website.url)
-        except Exception as e:
-            print(e)
-            return None
-
+    def __get_links(self, soup):
+        """Get a list of all the links from the given soup"""
         # Get HTML as BeautifulSoup object
-        soup = BeautifulSoup(html, 'html.parser')
         link_list = []
 
         # Add href to link_list if present
         for link in soup.find_all('a'):
             if 'href' in link.attrs:
-                link_list.append(link.attrs['href'])
+                link_list.append(link.attrs.get('href'))
 
         return link_list
+    
+    def __get_next_page(self, soup):
+        """Find the link to the next page in the given soup"""
+        try:
+            next_page = soup.find('a', rel='next').attrs.get('href')
+        except:
+            return None
+        
+        return next_page
 
-    def __scrape_gradcracker(self):
+    def __scrape_gradcracker(self, url):
         """Scrape from Gradcracker"""
         # Get list of all links on page
         try:
-            link_list = self.get_links()
+            soup = self.__get_soup(url)
         except Exception as e:
             print(e)
             return None
 
+        link_list = self.__get_links(soup)
+        next_page = self.__get_next_page(soup)
+        
         # Filter list of links for job listings
         job_filter = re.compile(r'https:\/\/www\.gradcracker\.com\/.*\/graduate-job\/.*')
         filtered_list = list(filter(job_filter.match, link_list))
         # # DEBUG:
         # print(filtered_list)
+        # print(next_page)
 
         # Visit job listing links and get the data we want
         for link in filtered_list:
             try:
-                html = self.__get_html(link)
+                listing_soup = self.__get_soup(link)
             except Exception as e:
                 print(e)
 
-            soup = BeautifulSoup(html, 'html.parser')
-            jobtitle = soup.find(self.website.title_tag).get_text()
-            location = soup.find('div', text=self.website.location_tag).parent.get_text()
-            print(jobtitle, location) # TODO: Put job data into job listing class
+            print('Found Job!')
+            
+            # Find job info in HTML
+            company = listing_soup.find('input', id=self.website.company_tag).attrs.get('value')
+            jobtitle = listing_soup.find(self.website.title_tag).get_text()
+            location = listing_soup.find('div', text=self.website.location_tag).parent.get_text()
+            pay = listing_soup.find('div', text=self.website.pay_tag).parent.get_text()
+            desc = listing_soup.find('div', class_=self.website.desc_tag).get_text()
+            
+            # Make instance of JobListing class and dump info to database
+            job = JobListing(self.website.name, company, jobtitle, location, pay, desc)
+            # # DEBUG
+            # print(company, jobtitle, location, pay)
+            # print(desc)
+            
+        # # DEBUG:
+        # print(next_page)
+        
+        if next_page is not None:
+            next_url = 'https://www.gradcracker.com' + next_page
+            print('Moving to next page...')
+            self.__scrape_gradcracker(next_url)
 
     def __scrape_indeed(self):
         """Scrape from Indeed"""
@@ -75,7 +99,9 @@ class Scraper:
 
     def scrape(self):
         if self.website.name == 'Gradcracker':
-            return self.__scrape_gradcracker()
+            print('Scraping Gradcracker...')
+            self.__scrape_gradcracker(self.website.url)
+            print('Finished!')
         elif self.website.name == 'Indeed':
             return self.__scrape_indeed()
         else:
