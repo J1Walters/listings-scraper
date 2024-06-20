@@ -1,6 +1,7 @@
 import time
 import re
 import sqlite3
+from datetime import datetime
 from bs4 import BeautifulSoup
 from joblisting import JobListing
 from selenium_config import load_selenium_driver
@@ -80,9 +81,10 @@ class Scraper:
             location = listing_soup.find('div', text=self.website.location_tag).parent.get_text()
             pay = listing_soup.find('div', text=self.website.pay_tag).parent.get_text()
             desc = listing_soup.find('div', class_=self.website.desc_tag).get_text()
+            timestamp = datetime.now().date().isoformat()
             
             # Make instance of JobListing class and dump info to database
-            job = JobListing(self.website.name, company, jobtitle, location, pay, desc)
+            job = JobListing(self.website.name, company, jobtitle, location, pay, desc, timestamp)
             job.dump_to_db(db_con)
 
             # # DEBUG
