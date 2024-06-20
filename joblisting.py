@@ -1,12 +1,13 @@
 class JobListing:
     """Class for all job listings"""
-    def __init__(self, website, company, title, location, pay, description):
+    def __init__(self, website, company, title, location, pay, description, timestamp):
         self.website = website
         self.company = company
         self.title = title
         self.location = location
         self.pay = pay
         self.description = description
+        self.timestamp = timestamp
   
     def print(self):
         """Print attributes"""
@@ -20,6 +21,21 @@ class JobListing:
     def dump_to_db(self, db_con):
         """Insert listing info into database"""
         cur = db_con.cursor()
-        cur.execute('INSERT INTO website (name) VALUES (?)', self.website)
-        cur.execute('INSERT INTO company (name) VALUES (?)', self.company)
+        try:
+            cur.execute('INSERT INTO website (id, name) VALUES (NULL, ?)', (self.website,))
+        except: #TODO: Get the actual exception for non-unique
+            pass
+        try:
+            cur.execute('INSERT INTO company (id, name) VALUES (NULL, ?)', (self.company,))
+        except: # Same as above
+            pass
+        web_res = cur.execute('SELECT id FROM website WHERE name = ?', (self.website,))
+        website_id = web_res.fetchone()[0]
+        # print(website_id)
+        company_res = cur.execute('SELECT id FROM company WHERE name = ?', (self.company,))
+        company_id = company_res.fetchone()[0]
+        # print(company_id)
+        cur.execute('INSERT INTO job (id, website_id, company_id, title, location, pay, description, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)',
+                    (website_id, company_id, self.title, self.location, self.pay, self.description, self.timestamp)
+        )
         db_con.commit()
