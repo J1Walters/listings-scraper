@@ -4,6 +4,8 @@ import sqlite3
 from datetime import datetime
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from joblisting import JobListing
 from selenium_config import load_selenium_driver
 from sqlite_config import DATABASE_PATH
@@ -20,7 +22,7 @@ class Scraper:
         try:
             # Make connection to site and wait for loading
             Scraper.driver.get(url)
-            time.sleep(2)
+            time.sleep(5)
         except Exception as e:
             print(e)
             return None
@@ -41,10 +43,20 @@ class Scraper:
     
     def __get_next_page(self, soup):
         """Find the link to the next page in the given soup"""
-        try:
-            next_page = soup.find('a', rel='next').attrs.get('href')
-        except Exception:
-            return None
+        # For Gradcracker
+        if self.website.name == 'Gradcracker':
+            try:
+                next_page = soup.find('a', rel='next').attrs.get('href')
+            except Exception as e:
+                print(e)
+                return None
+        # For Indeed
+        elif self.website.name == 'Indeed':
+            try:
+                next_page = soup.select('a[data-testid="pagination-page-next"]')[0].attrs.get('href')
+            except Exception as e:
+                print(e)
+                return None
         
         return next_page
 
@@ -111,21 +123,63 @@ class Scraper:
             print(e)
             return None
 
+        # Reject cookies
+        accept_cookies = Scraper.driver.find_element(By.ID, 'onetrust-accept-btn-handler')
+        accept_cookies.click()
+        time.sleep(2)
+        
         # Submit search term into search bar
         search_box = Scraper.driver.find_element(By.ID, 'text-input-what')
         submit_button = Scraper.driver.find_element(By.CLASS_NAME, 'yosegi-InlineWhatWhere-primaryButton')
 
         search_box.send_keys('technology')
+        time.sleep(1)
         submit_button.click()
-
+        
         # Filter to only show jobs requiring bachelor degrees and higher
-        
-        
+        # Locate and open education level selection
+        time.sleep(1)
+        education_lvl_button = Scraper.driver.find_element(By.ID, 'filter-taxo2')
+        education_lvl_button.click()
+        # Wait until filters have loaded
+        WebDriverWait(Scraper.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[value="HFDVW"]')))
+        # Locate and select filters
+        bachelors_button = Scraper.driver.find_element(By.CSS_SELECTOR, 'input[value="HFDVW"]')
+        masters_button = Scraper.driver.find_element(By.CSS_SELECTOR, 'input[value="EXSNN"]')
+        phd_button = Scraper.driver.find_element(By.CSS_SELECTOR, 'input[value="6QC5F"]')
+        filter_button = Scraper.driver.find_element(By.CSS_SELECTOR, 'button[form="filter-taxo2-menu"]')
+        bachelors_button.click()
+        masters_button.click()
+        phd_button.click()
+        filter_button.click()
+        # Return the URL for the filtered results
+        return Scraper.driver.current_url
 
     def __scrape_indeed(self, url, db_con):
         """Scrape from Indeed"""
-        # Navigate to tech job list
+        # Navigate to tech job list and get URL if starting from original URL
+        if url == self.website.url:
+            jobs_url = self.__navigate_to_indeed_jobs(url)
 
+            # Get the soup and links from the job listing page
+            try:
+                soup = self.__get_soup(jobs_url)
+            except Exception as e:
+                print(e)
+                return None
+        else:
+            # Get the soup and links from the given URL
+            try:
+                soup = self.__get_soup(url)
+            except Exception as e:
+                print(e)
+                return None
+        
+        # Get list of links and link to next page
+        link_list = self.__get_links(soup)
+        next_page = self.__get_next_page(soup)
+        print(link_list)
+        print(next_page)
 
 
     def scrape(self):
@@ -138,7 +192,7 @@ class Scraper:
         if self.website.name == 'Gradcracker':
             self.__scrape_gradcracker(self.website.url, con)
         elif self.website.name == 'Indeed':
-            return self.__scrape_indeed(self.website.url, con)
+            self.__scrape_indeed(self.website.url, con)
 
         # Close database connection
         con.close()
