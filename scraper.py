@@ -178,9 +178,47 @@ class Scraper:
         # Get list of links and link to next page
         link_list = self.__get_links(soup)
         next_page = self.__get_next_page(soup)
-        print(link_list)
-        print(next_page)
+        # # DEBUG:
+        # print(link_list)
+        # print(next_page)
 
+        # Filter list of links for job listings
+        job_filter = re.compile(r'\/pagead\/.*')
+        filtered_list = list(filter(job_filter.match, link_list))
+        # # DEBUG:
+        # print(filtered_list)
+        
+        # Visit job listing links and get the data we want
+        for link in filtered_list:
+            try:
+                listing_soup = self.__get_soup('https://uk.indeed.com' + link)
+            except Exception as e:
+                print(e)
+
+            if listing_soup is not None:
+                print('Found Job!')
+            
+                # Find job info in HTML
+                company = listing_soup.find('span', class_=self.website.company_tag).a.attrs.get('aria-label')
+                jobtitle = listing_soup.find(self.website.title_tag).get_text()
+                location = listing_soup.find('div', id=self.website.location_tag).get_text()
+                try:
+                    pay = listing_soup.find('span', class_=self.website.pay_tag).get_text()
+                except Exception:
+                    pay = None
+                desc = listing_soup.find('div', id=self.website.desc_tag).get_text()
+                timestamp = datetime.now().date().isoformat()
+            
+                # Make instance of JobListing class and dump info to database
+                # job = JobListing(self.website.name, company, jobtitle, location, pay, desc, timestamp)
+                # job.dump_to_db(db_con)
+
+                # # DEBUG
+                print(company)
+                print(jobtitle)
+                print(location)
+                print(pay)
+                print(desc)
 
     def scrape(self):
         print(f'Scraping from {self.website.name}...')
