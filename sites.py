@@ -19,11 +19,11 @@ def indeed():
                    url = 'https://uk.indeed.com/',
                    listing_class = None,
                    listing_format= None,
-                   company_tag = None,
-                   title_tag = None,
-                   location_tag = None,
-                   pay_tag = None,
-                   desc_tag = None
+                   company_tag = 'css-1saizt3 e1wnkr790',
+                   title_tag = 'h1',
+                   location_tag = 'jobLocationText',
+                   pay_tag = 'css-19j1a75 eu4oa1w0',
+                   desc_tag = 'jobDescriptionText'
     )
     return site
 
