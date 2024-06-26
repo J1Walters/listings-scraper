@@ -85,16 +85,37 @@ class Scraper:
                 listing_soup = self.__get_soup(link)
             except Exception as e:
                 print(e)
+                listing_soup = None
 
             if listing_soup is not None:
                 print('Found Job!')
-            
+
                 # Find job info in HTML
-                company = listing_soup.find('input', id=self.website.company_tag).attrs.get('value')
-                jobtitle = listing_soup.find(self.website.title_tag).get_text()
-                location = listing_soup.find('div', text=self.website.location_tag).parent.get_text()
-                pay = listing_soup.find('div', text=self.website.pay_tag).parent.get_text()
-                desc = listing_soup.find('div', class_=self.website.desc_tag).get_text()
+                try:
+                    company = listing_soup.find('input', id=self.website.company_tag).attrs.get('value')
+                except Exception:
+                    company = 'NULL'
+
+                try:
+                    jobtitle = listing_soup.find(self.website.title_tag).get_text()
+                except Exception:
+                    jobtitle = 'NULL'
+
+                try:
+                    location = listing_soup.find('div', text=self.website.location_tag).parent.get_text()
+                except Exception:
+                    location = 'NULL'
+
+                try:
+                    pay = listing_soup.find('div', text=self.website.pay_tag).parent.get_text()
+                except Exception:
+                    pay = 'NULL'
+
+                try:
+                    desc = listing_soup.find('div', class_=self.website.desc_tag).get_text()
+                except Exception:
+                    desc = 'NULL'
+
                 timestamp = datetime.now().date().isoformat()
             
                 # Make instance of JobListing class and dump info to database
@@ -194,21 +215,39 @@ class Scraper:
                 listing_soup = self.__get_soup('https://uk.indeed.com' + link)
             except Exception as e:
                 print(e)
+                listing_soup = None
 
             if listing_soup is not None:
                 print('Found Job!')
-            
+
                 # Find job info in HTML
-                company = listing_soup.find('span', class_=self.website.company_tag).a.attrs.get('aria-label')
-                jobtitle = listing_soup.find(self.website.title_tag).get_text()
-                location = listing_soup.find('div', id=self.website.location_tag).get_text()
+                try:
+                    company = listing_soup.find('span', class_=self.website.company_tag).a.attrs.get('aria-label')
+                except Exception:
+                    company = 'NULL'
+
+                try:
+                    jobtitle = listing_soup.find(self.website.title_tag).get_text()
+                except Exception:
+                    jobtitle = 'NULL'
+
+                try:  
+                    location = listing_soup.find('div', id=self.website.location_tag).get_text()
+                except Exception:
+                    location = 'NULL'
+
                 try:
                     pay = listing_soup.find('span', class_=self.website.pay_tag).get_text()
                 except Exception:
-                    pay = None
-                desc = listing_soup.find('div', id=self.website.desc_tag).get_text()
+                    pay = 'NULL'
+
+                try:
+                    desc = listing_soup.find('div', id=self.website.desc_tag).get_text()
+                except Exception:
+                    desc = 'NULL'
+
                 timestamp = datetime.now().date().isoformat()
-            
+
                 # Make instance of JobListing class and dump info to database
                 # job = JobListing(self.website.name, company, jobtitle, location, pay, desc, timestamp)
                 # job.dump_to_db(db_con)
@@ -219,6 +258,12 @@ class Scraper:
                 print(location)
                 print(pay)
                 print(desc)
+                
+        # Scrape from next page
+        if next_page is not None:
+            next_url = 'https://uk.indeed.com' + next_page
+            print('Moving to next page...')
+            self.__scrape_indeed(next_url, db_con)
 
     def scrape(self):
         print(f'Scraping from {self.website.name}...')
