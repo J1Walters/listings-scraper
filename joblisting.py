@@ -25,12 +25,12 @@ class JobListing:
         # Add website to website table only if not already in there else pass
         try:
             cur.execute('INSERT INTO website (id, name) VALUES (NULL, ?)', (self.website,))
-        except: #TODO: Get the actual exception for non-unique
+        except Exception:
             pass
         # Add comapny to company table only if not already in there else pass
         try:
             cur.execute('INSERT INTO company (id, name) VALUES (NULL, ?)', (self.company,))
-        except: # Same as above
+        except Exception:
             pass
         # Get the website and company IDs from the tables
         web_res = cur.execute('SELECT id FROM website WHERE name = ?', (self.website,))
