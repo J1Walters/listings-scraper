@@ -223,6 +223,7 @@ class Scraper:
                 # Find job info in HTML
                 try:
                     company = listing_soup.find('span', class_=self.website.company_tag).a.attrs.get('aria-label')
+                    company = company.replace('(opens in a new tab)', '')
                 except Exception:
                     company = 'NULL'
 
@@ -249,15 +250,15 @@ class Scraper:
                 timestamp = datetime.now().date().isoformat()
 
                 # Make instance of JobListing class and dump info to database
-                # job = JobListing(self.website.name, company, jobtitle, location, pay, desc, timestamp)
-                # job.dump_to_db(db_con)
+                job = JobListing(self.website.name, company, jobtitle, location, pay, desc, timestamp)
+                job.dump_to_db(db_con)
 
                 # # DEBUG
-                print(company)
-                print(jobtitle)
-                print(location)
-                print(pay)
-                print(desc)
+                # print(company)
+                # print(jobtitle)
+                # print(location)
+                # print(pay)
+                # print(desc)
                 
         # Scrape from next page
         if next_page is not None:
@@ -266,6 +267,7 @@ class Scraper:
             self.__scrape_indeed(next_url, db_con)
 
     def scrape(self):
+        """Scrapes from the website"""
         print(f'Scraping from {self.website.name}...')
 
         # Open database connection
