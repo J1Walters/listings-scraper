@@ -187,6 +187,7 @@ class Scraper:
                 soup = self.__get_soup(jobs_url)
             except Exception as e:
                 print(e)
+                print(jobs_url)
                 return None
         else:
             # Get the soup and links from the given URL
@@ -194,6 +195,7 @@ class Scraper:
                 soup = self.__get_soup(url)
             except Exception as e:
                 print(e)
+                print(url)
                 return None
         
         # Get list of links and link to next page
@@ -204,7 +206,7 @@ class Scraper:
         # print(next_page)
 
         # Filter list of links for job listings
-        job_filter = re.compile(r'\/pagead\/.*')
+        job_filter = re.compile(r'\/pagead\/.*|\/rc\/.*')
         filtered_list = list(filter(job_filter.match, link_list))
         # # DEBUG:
         # print(filtered_list)
@@ -270,6 +272,9 @@ class Scraper:
         """Scrapes from the website"""
         print(f'Scraping from {self.website.name}...')
 
+        # Get start time
+        start_time = time.time()
+
         # Open database connection
         con = sqlite3.connect(DATABASE_PATH)
 
@@ -282,4 +287,11 @@ class Scraper:
         # Close database connection
         con.close()
 
+        # Get end time
+        end_time = time.time()
+
+        # Get time taken in minutes
+        time_taken_mins = (end_time - start_time) / 60
+
         print('Finished!')
+        print(f'Time Taken: {time_taken_mins} minutes')
