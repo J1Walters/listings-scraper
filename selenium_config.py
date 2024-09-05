@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-CHROMEDRIVER_PATH = './chromedriver/chromedriver.exe'
+CHROMEDRIVER_PATH = 'C:/University/6G7V0007_MSC_Project/Project/Code/listings-scraper/chromedriver/chromedriver.exe'
 options = Options()
 # options.add_argument('--headless')
 
